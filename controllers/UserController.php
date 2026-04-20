@@ -37,7 +37,7 @@ class UserController
                 'message' => 'Invalid JSON input'
             ], 400);
         }
-        die(json_encode($data));
+        
         $name = $data['name'] ?? "";
         $email = $data['email'] ?? "";
 
