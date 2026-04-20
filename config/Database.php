@@ -7,7 +7,7 @@ class Database {
     private function __construct()
     {
         try {
-            $url = getenv('MYSQLURL');
+            $url = getenv('MYSQL_URL');
             $parts = parse_url($url);
             $host = $parts['host'] ?? getenv('MYSQLHOST');
             $port = $parts['port'] ?? getenv('MYSQLPORT');
