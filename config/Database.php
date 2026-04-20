@@ -7,11 +7,13 @@ class Database {
     private function __construct()
     {
         try {
-            $host = getenv('MYSQLHOST');
-            $port = getenv('MYSQLPORT');
-            $dbname = getenv('MYSQLDATABASE');
-            $user = getenv('MYSQLUSER');
-            $password = getenv('MYSQLPASSWORD');
+            $url = getenv('MYSQLURL');
+            $parts = parse_url($url);
+            $host = $parts['host'] ?? getenv('MYSQLHOST');
+            $port = $parts['port'] ?? getenv('MYSQLPORT');
+            $dbname = $parts['path'] ? ltrim($parts['path'], '/') : getenv('MYSQLDATABASE');
+            $user = $parts['user'] ?? getenv('MYSQLUSER');
+            $password = $parts['pass'] ?? getenv('MYSQLPASSWORD');
 
             if(!$host || !$port || !$dbname || !$user || !$password) {
                 throw new Exception("Database configuration is incomplete");
