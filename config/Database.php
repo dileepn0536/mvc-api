@@ -1,9 +1,5 @@
 <?php
 class Database {
-    private $host = "localhost";
-    private $db = "mvc_app";
-    private $user = "root";
-    private $pass = "";
 
     private $conn = null;
     private static $instance = null;
@@ -12,9 +8,9 @@ class Database {
     {
         try {
             $this->conn = new PDO(
-                "mysql:host=" . getenv('DB_HOST') . ";port=" . getenv('DB_PORT') . ";dbname=" . getenv('DB_NAME') . ";charset=utf8mb4",
-                getenv('DB_USER'),
-                getenv('DB_PASS'),
+                "mysql:host=" . getenv('MYSQLHOST') . ";port=" . getenv('MYSQLPORT') . ";dbname=" . getenv('MYSQLDATABASE') . ";charset=utf8mb4",
+                getenv('MYSQLUSER'),
+                getenv('MYSQLPASSWORD'),
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
