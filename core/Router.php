@@ -6,8 +6,6 @@ class Router
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $url = trim($url, '/');
         $url = strtolower($url);
-        echo "Requested URL: $url\n";
-        die("Debug: Router is handling the request");
 
         $method = $_SERVER['REQUEST_METHOD'];
 
@@ -15,16 +13,16 @@ class Router
         $userService = new UserService($userRepository);
         $controller = new UserController($userService);
 
-        if ($url === '/users' && $method === 'GET') {
+        if ($url === 'users' && $method === 'GET') {
             $controller->index();
 
-        } elseif ($url === '/users/store' && $method === 'POST') {
+        } elseif ($url === 'users/store' && $method === 'POST') {
             $controller->storeUser();
 
-        } elseif ($url === '/users/update' && $method === 'PUT') {
+        } elseif ($url === 'users/update' && $method === 'PUT') {
             $controller->updateUser();
 
-        } elseif ($url === '/users/delete' && $method === 'DELETE') {
+        } elseif ($url === 'users/delete' && $method === 'DELETE') {
             $controller->deleteUser();
 
         } else {
