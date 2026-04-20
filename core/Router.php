@@ -6,8 +6,7 @@ class Router
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $url = trim($url, '/');
         $url = strtolower($url);
-        // $url = str_replace('oops/mvc', '', $url);
-        echo $url;die;
+        $url = str_replace('oops/mvc', '', $url);
 
         $method = $_SERVER['REQUEST_METHOD'];
 
