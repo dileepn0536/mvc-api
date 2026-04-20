@@ -12,7 +12,7 @@ class Database {
     {
         try {
             $this->conn = new PDO(
-                "mysql:host=" . getenv('DB_HOST') . ";dbname=" . getenv('DB_NAME') . ";charset=utf8mb4",
+                "mysql:host=" . getenv('DB_HOST') . ";port=" . getenv('DB_PORT') . ";dbname=" . getenv('DB_NAME') . ";charset=utf8mb4",
                 getenv('DB_USER'),
                 getenv('DB_PASS'),
                 [
