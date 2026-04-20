@@ -6,7 +6,8 @@ class Router
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $url = trim($url, '/');
         $url = strtolower($url);
-        $url = str_replace('oops/mvc', '', $url);
+        echo "Requested URL: $url\n";
+        die("Debug: Router is handling the request");
 
         $method = $_SERVER['REQUEST_METHOD'];
 
