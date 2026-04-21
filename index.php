@@ -1,6 +1,5 @@
 <?php
-error_reporting(E_ALL);
-$env = 'dev'; // change to 'prod' later
+$env = getenv('APP_ENV') ?: 'env';
 
 if ($env === 'dev') {
     error_reporting(E_ALL);
@@ -10,7 +9,6 @@ if ($env === 'dev') {
     ini_set('display_errors', 0);
 }
 
-header("Content-Type: application/json");
 spl_autoload_register(function ($class) {
     $folders = ['controllers','services','models','core','repositories','config'];
     foreach($folders as $folder) {

@@ -47,7 +47,7 @@ class UserController
         }
 
         try {
-             $this->userService->createUser($name, $email);
+            $this->userService->createUser($name, $email);
             $this->jsonResponse([
                 'status' => true,
                 'message' => "User created successfully"
@@ -80,8 +80,8 @@ class UserController
 
     public function updateUser()
     {
-
         $data = $this->getJsonData();
+        
         if ($data === null) {
             $this->jsonResponse([
                 'status' => false,

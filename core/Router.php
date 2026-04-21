@@ -9,28 +9,60 @@ class Router
 
         $method = $_SERVER['REQUEST_METHOD'];
 
-        $userRepository = new UserRepository();
-        $userService = new UserService($userRepository);
-        $controller = new UserController($userService);
+        $routes = [
+            'GET' => [
+                'users' => 'UserController@index'
+            ],
+            'POST' => [
+                'users/store' => 'UserController@storeUser'
+            ],
+            'PUT' => [
+                'users/update' => 'UserController@updateUser'
+            ],
+            'DELETE' => [
+                'users/delete' => 'UserController@deleteUser'
+            ]
+        ];
 
-        if ($url === 'users' && $method === 'GET') {
-            $controller->index();
+        // define routes
 
-        } elseif ($url === 'users/store' && $method === 'POST') {
-            $controller->storeUser();
+        if(isset($routes[$method][$url])) {
+            $action = $routes[$method][$url];
+            // split the string into controller and method, ex: UserController@index => ['UserController', 'index']
+            list($controllerName, $methodName) = explode('@', $action);
+            if(!class_exists($controllerName)) {
+                $this->sendJsonResponse([
+                    'status' => false,
+                    'message' => "Controller $controllerName not found"
+                ], 500);
+            }
 
-        } elseif ($url === 'users/update' && $method === 'PUT') {
-            $controller->updateUser();
+            $controller = match ($controllerName) {
+                'UserController' => new UserController(new UserService(new UserRepository())),
+                default => null
+            };
 
-        } elseif ($url === 'users/delete' && $method === 'DELETE') {
-            $controller->deleteUser();
-
+            if($controller && method_exists($controller, $methodName)) {
+                $controller->$methodName();
+            } else {
+                $this->sendJsonResponse([
+                    'status' => false,
+                    'message' => "Method $methodName not found in controller $controllerName"
+                ], 404);
+            }
         } else {
-            http_response_code(404);
-            echo json_encode([
+            $this->sendJsonResponse([
                 'status' => false,
                 'message' => "Route not found"
-            ]);
+            ], 404);
         }
+    }
+
+    private function sendJsonResponse($data, $statusCode = 200)
+    {
+        http_response_code($statusCode);
+        header("Content-Type: application/json");
+        echo json_encode($data);
+        exit;
     }
 }
