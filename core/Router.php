@@ -62,6 +62,9 @@ class Router
 
     private function sendJsonResponse($data, $statusCode = 200)
     {
+        $time = round((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2);
+        error_log("Response time: {$time}ms | Status: {$statusCode}");
+        
         http_response_code($statusCode);
         header("Content-Type: application/json");
         echo json_encode($data);
