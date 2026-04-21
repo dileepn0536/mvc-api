@@ -10,12 +10,31 @@ if ($env === 'dev') {
 }
 
 spl_autoload_register(function ($class) {
-    $folders = ['controllers','services','models','core','repositories','config'];
-    foreach($folders as $folder) {
-        $path = "$folder/$class.php";
+    // This is your "Address Book"
+    // It maps the Class Name to the exact File Path
+    $classMap = [
+        // Core
+        'Router'         => 'core/Router.php',
+        'Database'       => 'core/Database.php',
+        
+        // Controllers
+        'UserController' => 'controllers/UserController.php',
+        'TestController' => 'controllers/TestController.php',
+        
+        // Services
+        'UserService'    => 'services/UserService.php',
+        
+        // Repositories
+        'UserRepository' => 'repositories/UserRepository.php',
+        
+        // Models
+        'User'           => 'models/User.php',
+    ];
+
+    if (isset($classMap[$class])) {
+        $path = $classMap[$class];
         if (file_exists($path)) {
             require_once $path;
-            return;
         }
     }
 });
