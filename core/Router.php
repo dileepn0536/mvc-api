@@ -11,7 +11,7 @@ class Router
 
         $routes = [
             'GET' => [
-                'users' => 'UserController@shouldNotExist',
+                'users' => 'TestController@index'
             ],
             'POST' => [
                 'users/store' => 'UserController@storeUser'
