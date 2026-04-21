@@ -11,7 +11,9 @@ class Router
 
         $routes = [
             'GET' => [
-                'users' => 'TestController@index'
+                'users' => 'UserController@index',
+                'users/test' => 'UserController@test',
+                'users/debugging' => 'TestController@testDebugging',
             ],
             'POST' => [
                 'users/store' => 'UserController@storeUser'
