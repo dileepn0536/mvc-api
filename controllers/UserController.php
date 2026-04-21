@@ -11,7 +11,10 @@ class UserController
 
     public function index()
     {
-        $users = $this->userService->getUsers();
+        $page = isset($_GET['page']) ?: 1;
+        $limit = isset($_GET['limit']) ?: 20;
+        $offset = ($page - 1) * $limit;
+        $users = $this->userService->getUsers($limit, $offset);
 
         $this->jsonResponse([
             'status' => true,
