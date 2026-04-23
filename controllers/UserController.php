@@ -3,22 +3,26 @@
 class UserController
 {
     private $userService;
+    private $cache;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService , Cache $cache)
     {
         $this->userService = $userService;
+        $this->cache = $cache;
     }
 
     public function index()
     {
-        $page = isset($_GET['page']) ?: 1;
-        $limit = isset($_GET['limit']) ?: 20;
+        $page  = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
         $offset = ($page - 1) * $limit;
+
+        // controller doesn't know about cache at all!
         $users = $this->userService->getUsers($limit, $offset);
 
         $this->jsonResponse([
             'status' => true,
-            'data' => $users,
+            'data'   => $users,
         ]);
     }
 

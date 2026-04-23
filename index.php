@@ -16,6 +16,7 @@ spl_autoload_register(function ($class) {
         // Core
         'Router'         => 'core/Router.php',
         'Database'       => 'core/Database.php',
+        'Cache'          => 'core/Cache.php',
         
         // Controllers
         'UserController' => 'controllers/UserController.php',

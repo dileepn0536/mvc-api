@@ -40,7 +40,7 @@ class Router
             }
 
             $controller = match ($controllerName) {
-                'UserController' => new UserController(new UserService(new UserRepository())),
+                'UserController' => new UserController(new UserService(new UserRepository(), new Cache()), new Cache()),
                 default => null
             };
 
