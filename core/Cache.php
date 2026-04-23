@@ -1,68 +1,77 @@
 <?php
-class UserService
+
+class Cache
 {
-    private $userRepository;
-    private $cache;
+    private string $cacheDir;
+    private int $defaultTTL;
 
     public function __construct(
-        UserRepository $userRepository,
-        Cache $cache
+        string $cacheDir = 'cache/',
+        int $defaultTTL = 300
     ) {
-        $this->userRepository = $userRepository;
-        $this->cache = $cache;
+        $this->cacheDir = $cacheDir;
+        $this->defaultTTL = $defaultTTL;
+
+        // create cache directory if not exists
+        if (!is_dir($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
+        }
     }
 
-    public function getUsers($limit = 20, $offset = 0)
+    public function get(string $key): mixed
     {
-        $cacheKey = "users_{$limit}_{$offset}";
+        $cacheFile = $this->getCacheFilePath($key);
 
-        // check cache first
-        $users = $this->cache->get($cacheKey);
-
-        if ($users === null) {
-            // cache miss → hit DB
-            $users = $this->userRepository->getUsers($limit, $offset);
-            // store in cache for 5 minutes
-            $this->cache->set($cacheKey, $users, 300);
+        if (!file_exists($cacheFile)) {
+            return null; // cache miss
         }
 
-        return $users;
-    }
+        $content = file_get_contents($cacheFile);
+        $data = json_decode($content, true);
 
-    public function createUser($name, $email)
-    {
-        $result = $this->userRepository->createUser($name, $email);
-        $this->cache->flush(); // invalidate cache ✅
-        return $result;
-    }
-
-    public function getUserById($id)
-    {
-        $cacheKey = "user_{$id}";
-
-        $user = $this->cache->get($cacheKey);
-
-        if ($user === null) {
-            $user = $this->userRepository->getUserById($id);
-            if ($user) {
-                $this->cache->set($cacheKey, $user, 300);
-            }
+        // check if expired
+        if (time() > $data['expires_at']) {
+            $this->delete($key); // clean up
+            return null; // cache expired
         }
 
-        return $user;
+        return $data['value'];
     }
 
-    public function updateUser($id, $name, $email)
+    public function set(string $key, mixed $value, int $ttl = null): void
     {
-        $result = $this->userRepository->updateUser($id, $name, $email);
-        $this->cache->flush(); // invalidate cache ✅
-        return $result;
+        $cacheFile = $this->getCacheFilePath($key);
+        $ttl = $ttl ?? $this->defaultTTL;
+
+        $data = [
+            'value'      => $value,
+            'expires_at' => time() + $ttl,
+            'created_at' => time()
+        ];
+
+        file_put_contents($cacheFile, json_encode($data));
     }
 
-    public function deleteUser($id)
+    public function delete(string $key): void
     {
-        $result = $this->userRepository->deleteUser($id);
-        $this->cache->flush(); // invalidate cache ✅
-        return $result;
+        $cacheFile = $this->getCacheFilePath($key);
+        if (file_exists($cacheFile)) {
+            unlink($cacheFile);
+        }
+    }
+
+    public function flush(): void
+    {
+        // clear ALL cache files
+        $files = glob($this->cacheDir . '*.json');
+        foreach ($files as $file) {
+            unlink($file);
+        }
+    }
+
+    private function getCacheFilePath(string $key): string
+    {
+        // md5 to handle special characters in key
+        return $this->cacheDir . md5($key) . '.json';
     }
 }
