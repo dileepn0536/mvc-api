@@ -14,6 +14,7 @@ class Router
                 'users' => 'UserController@index',
                 'users/test' => 'UserController@test',
                 'users/debugging' => 'TestController@testDebugging',
+                'cache-check' => 'UserController@cacheCheck',
             ],
             'POST' => [
                 'users/store' => 'UserController@storeUser'

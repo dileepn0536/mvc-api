@@ -26,6 +26,16 @@ class UserController
         ]);
     }
 
+    public function cacheCheck()
+    {
+        $files = glob('cache/*.json');
+        $this->jsonResponse([
+            'status' => true,
+            'cache_files' => $files,
+            'count' => count($files)
+        ]);
+    }
+
     public function createUser()
     {
         require_once "views/createuser.php";
