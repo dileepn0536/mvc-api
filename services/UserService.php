@@ -32,7 +32,15 @@ class UserService
     public function createUser($name, $email)
     {
         $result = $this->userRepository->createUser($name, $email);
-        $this->cache->flush(); // invalidate cache ✅
+        if($result) {
+            // send welcome email
+            $notification = NotificationFactory::create('email');
+            $notification->send(
+                $email,
+                "Welcome $name! Your account has been created."
+            );
+            $this->cache->flush(); // invalidate cache ✅
+        }
         return $result;
     }
 

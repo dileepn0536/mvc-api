@@ -24,6 +24,10 @@ spl_autoload_register(function ($class) {
         
         // Services
         'UserService'    => 'services/UserService.php',
+        'NotificationInterface' => 'services/NotificationInterface.php',
+        'SMSNotification' => 'services/SMSNotification.php',
+        'EmailNotification' => 'services/EmailNotification.php',
+        'NotificationFactory' => 'services/NotificationFactory.php',
         
         // Repositories
         'UserRepository' => 'repositories/UserRepository.php',
