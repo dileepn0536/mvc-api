@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-$env = getenv('APP_ENV') ?: 'production';
+$env = getenv('APP_ENV') ?: 'prod';
 
 if ($env === 'dev') {
     error_reporting(E_ALL);
