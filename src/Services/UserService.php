@@ -1,4 +1,10 @@
 <?php
+namespace Dileep\Mvc\Services;
+
+use Dileep\Mvc\Repositories\UserRepository;
+use Dileep\Mvc\Core\Cache;
+use Dileep\Mvc\Services\NotificationFactory;
+
 class UserService
 {
     private $userRepository;

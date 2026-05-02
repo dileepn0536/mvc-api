@@ -1,5 +1,7 @@
 <?php
-$env = getenv('APP_ENV') ?: 'env';
+require_once __DIR__ . '/vendor/autoload.php';
+
+$env = getenv('APP_ENV') ?: 'production';
 
 if ($env === 'dev') {
     error_reporting(E_ALL);
@@ -9,49 +11,32 @@ if ($env === 'dev') {
     ini_set('display_errors', 0);
 }
 
-spl_autoload_register(function ($class) {
-    // This is your "Address Book"
-    // It maps the Class Name to the exact File Path
-    $classMap = [
-        // Core
-        'Router'         => 'core/Router.php',
-        'Database'       => 'core/Database.php',
-        'Cache'          => 'core/Cache.php',
-        
-        // Controllers
-        'UserController' => 'controllers/UserController.php',
-        'TestController' => 'controllers/TestController.php',
-        
-        // Services
-        'UserService'    => 'services/UserService.php',
-        'NotificationInterface' => 'services/NotificationInterface.php',
-        'SMSNotification' => 'services/SMSNotification.php',
-        'EmailNotification' => 'services/EmailNotification.php',
-        'NotificationFactory' => 'services/NotificationFactory.php',
-        
-        // Repositories
-        'UserRepository' => 'repositories/UserRepository.php',
-        
-        // Models
-        'User'           => 'models/User.php',
-    ];
-
-    if (isset($classMap[$class])) {
-        $path = $classMap[$class];
-        if (file_exists($path)) {
-            require_once $path;
-        }
-    }
-});
-
 try {
-    $router = new Router();
-    $router->handleRequest();
+    $router = new Dileep\Mvc\Core\Router();
+    $response = $router->handleRequest();
+
+    if(is_array($response)) {
+        header('Content-Type: application/json');
+        echo json_encode($response);
+    } else {
+        echo $response;
+    }
 } catch(Exception $e) {
     http_response_code(500);
-    echo json_encode([
+    header('Content-Type: application/json');
+    
+    $errorData = [
         'status' => false,
-        'message' => 'Unexpected error',
-        "details" => $e->getMessage()
-    ]);
+        'error' => 'An unexpected server error occurred.',
+    ];
+
+    if ($env === 'dev') {
+        $errorData['details'] = $e->getMessage();
+        $errorData['file'] = $e->getFile();
+        $errorData['line'] = $e->getLine();
+    } else {
+        // In production, you might want to log the error details instead of exposing them to the client.
+        error_log($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+    }
+    echo json_encode($errorData);
 }

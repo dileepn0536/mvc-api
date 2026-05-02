@@ -1,5 +1,7 @@
 <?php
 
+namespace Dileep\Mvc\Core;
+
 class Cache
 {
     private string $cacheDir;
@@ -38,7 +40,7 @@ class Cache
         return $data['value'];
     }
 
-    public function set(string $key, mixed $value, int $ttl = null): void
+    public function set(string $key, mixed $value, ?int $ttl = null): void
     {
         $cacheFile = $this->getCacheFilePath($key);
         $ttl = $ttl ?? $this->defaultTTL;

@@ -1,4 +1,7 @@
 <?php
+namespace Dileep\Mvc\Services;
+
+use Dileep\Mvc\Services\NotificationInterface;
 
 class EmailNotification implements NotificationInterface
 {

@@ -1,5 +1,11 @@
 <?php
 
+namespace Dileep\Mvc\Controllers;
+
+use Dileep\Mvc\Services\UserService;
+use Dileep\Mvc\Core\Cache;
+use Exception;
+
 class UserController
 {
     private $userService;
@@ -20,25 +26,27 @@ class UserController
         // controller doesn't know about cache at all!
         $users = $this->userService->getUsers($limit, $offset);
 
-        $this->jsonResponse([
+        return [
             'status' => true,
-            'data'   => $users,
-        ]);
+            'data' => $users
+        ];
     }
 
     public function cacheCheck()
     {
         $files = glob('cache/*.json');
-        $this->jsonResponse([
+        return [
             'status' => true,
             'cache_files' => $files,
             'count' => count($files)
-        ]);
+        ];
     }
 
     public function createUser()
     {
+        ob_start();
         require_once "views/createuser.php";
+        return ob_get_clean();
     }
 
     public function storeUser()
@@ -46,34 +54,43 @@ class UserController
         $data = $this->getJsonData();
      
         if ($data === null) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => 'Invalid JSON input'
-            ], 400);
+            ];
         }
         
         $name = $data['name'] ?? "";
         $email = $data['email'] ?? "";
 
         if(empty($name) || empty($email)) {
-            $this->jsonResponse(['status' =>false, 'message' => "Name and Email are required"], 400);
+            return [
+                'status' => false,
+                'message' => "Name and Email are required"
+            ];
         }
 
         if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->jsonResponse(['status' => false, 'message' => "Email is invalid"], 400);
+            return [
+                'status' => false,
+                'message' => "Email is invalid"
+            ];
         }
 
         try {
             $this->userService->createUser($name, $email);
-            $this->jsonResponse([
+            http_response_code(201);
+            return [
                 'status' => true,
                 'message' => "User created successfully"
-            ],201);
+            ];
         } catch(Exception $e) {
-            $this->jsonResponse([
+            http_response_code(500);
+            return [
                 'status' => false,
                 'message' => "Internal server error"
-            ],500);
+            ];
         }
     }
 
@@ -82,17 +99,20 @@ class UserController
         $id = $_GET['id'] ?? "";
 
         if(!$id) {
+            http_response_code(400);
             return "User not found";
         }
 
         $userinfo = $this->userService->getUserById($id);
 
         if(!$userinfo) {
-            echo "User not found";
-            return;
+            http_response_code(404);
+            return "User not found";
         }
         
+        ob_start();
         require_once "views/getedituser.php";
+        return ob_get_clean();
     }
 
     public function updateUser()
@@ -100,10 +120,11 @@ class UserController
         $data = $this->getJsonData();
         
         if ($data === null) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => 'Invalid JSON input'
-            ], 400);
+            ];
         }
 
         $name = $data['name'] ?? "";
@@ -111,46 +132,52 @@ class UserController
         $id = $data['id'] ?? null;
 
         if(!$id) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => "Invalid user"
-            ], 400);
+            ];
         }
 
         if (empty($name) || empty($email)) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => "All fields are required"
-            ], 400);
+            ];
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => "Invalid email format"
-            ], 400);
+            ];
         }
 
         $userinfo = $this->userService->getUserById($id);
 
         if (!$userinfo) {
-            $this->jsonResponse([
+            http_response_code(404);
+            return [
                 'status' => false,
                 'message' => "User not found"
-            ], 404);
+            ];
         }
 
         try {
             $this->userService->updateUser($id, $name, $email);
-            $this->jsonResponse([
+            http_response_code(200);
+            return [
                 'status' => true,
                 'message' => "User updated successfully"
-            ]);
+            ];
         } catch(Exception $e) {
-            $this->jsonResponse([
+            http_response_code(500);
+            return [
                 'status' => false,
                 'message' => "Internal server error"
-            ], 500);
+            ];
         }
     }
 
@@ -158,41 +185,44 @@ class UserController
     {
         $data = $this->getJsonData();
         if ($data === null) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => 'Invalid JSON input'
-            ], 400);
+            ];
         }
         $id = $data['id'] ?? null;
         if(!$id) {
-            $this->jsonResponse([
+            http_response_code(400);
+            return [
                 'status' => false,
                 'message' => "The id is invalid"
-            ], 400);
+            ];
         }
         $userinfo = $this->userService->getUserById($id);
 
         if (!$userinfo) {
-            $this->jsonResponse([
+            http_response_code(404);
+            return [
                 'status' => false,
                 'message' => "User not found"
-            ], 404);
+            ];
         }
 
         try {
             $this->userService->deleteUser($id);
-            $this->jsonResponse(['status' => true, 'message' => "User deleted successfully"], 200);
+            http_response_code(200);
+            return [
+                'status' => true,
+                'message' => "User deleted successfully"
+            ];
         } catch(Exception $e) {
-            $this->jsonResponse(['status' => false, 'message' => "Internal server error"], 500);
+            http_response_code(500);
+            return [
+                'status' => false,
+                'message' => "Internal server error"
+            ];
         }
-    }
-
-    private function jsonResponse($data, $statusCode = 200)
-    {
-        http_response_code($statusCode);
-        header("Content-type: application/json");
-        echo json_encode($data);
-        exit;
     }
 
     private function getJsonData()

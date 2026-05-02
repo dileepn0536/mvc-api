@@ -1,4 +1,5 @@
 <?php
+namespace Dileep\Mvc\Services;
 
 interface NotificationInterface
 {

@@ -1,0 +1,16 @@
+{
+    "name": "dileep/mvc",
+    "description": "PHP MVC API",
+    "autoload": {
+        "psr-4": {
+            "Dileep\\Mvc\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dileep Nadukuru",
+            "email": "dileepnadukuru@gmail.com"
+        }
+    ],
+    "require": {}
+}

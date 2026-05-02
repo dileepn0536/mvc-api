@@ -1,5 +1,7 @@
 <?php
 
+namespace Dileep\Mvc\Models;
+
 class User
 {
     public $id;
