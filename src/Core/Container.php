@@ -8,11 +8,20 @@ use Exception;
 class Container
 {
     private $bindings = [];
+    protected static $instance = null;
 
     // Your exact bind method!
     public function bind($abstract, $concrete)
     {
         $this->bindings[$abstract] = $concrete;
+    }
+
+    public static function getInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
     }
 
     public function resolve($abstract)

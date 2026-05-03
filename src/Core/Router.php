@@ -2,98 +2,103 @@
 
 namespace Dileep\Mvc\Core;
 
-// Notice we don't even need to 'use' the specific Controllers or Services anymore!
-// The Container will find them automatically.
 use Exception;
 
 class Router
 {
+    protected array $routes = [];
+
+    public function __construct()
+    {
+        // Load routes from external file (clean design)
+        $this->routes = require __DIR__ . '/../../routes/web.php';
+    }
+
     public function handleRequest()
     {
+        header('Content-Type: application/json');
+
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        // Normalize base path
+        $scriptName = $_SERVER['PHP_SELF'];
+        $base = dirname($scriptName);
+
+        if ($base !== '/' && strpos($url, $base) === 0) {
+            $url = substr($url, strlen($base));
+        }
+
+        // Normalize URL
+        $url = preg_replace('#/+#', '/', $url); // remove duplicate slashes
         $url = trim($url, '/');
         $url = strtolower($url);
 
-        $scriptDir = trim(dirname($_SERVER['SCRIPT_NAME']), '/');
-        if($scriptDir && strpos($url, $scriptDir) === 0) {
-            $url = ltrim(substr($url, strlen($scriptDir)), '/');
-        }
-
         $method = $_SERVER['REQUEST_METHOD'];
 
-        $routes = [
-            'GET' => [
-                'users' => 'UserController@index',
-                'users/test' => 'UserController@test',
-                'users/debugging' => 'TestController@testDebugging',
-                'cache-check' => 'UserController@cacheCheck',
-                'users/create' => 'UserController@createUser',
-                'users/show' => 'UserController@showUser'
-            ],
-            'POST' => [
-                'users/store' => 'UserController@storeUser'
-            ],
-            'PUT' => [
-                'users/update' => 'UserController@updateUser'
-            ],
-            'DELETE' => [
-                'users/delete' => 'UserController@deleteUser'
-            ]
-        ];
+        // 🚫 Method check
+        if (!isset($this->routes[$method])) {
+            http_response_code(405);
+            return json_encode([
+                'status' => false,
+                'message' => 'Method Not Allowed'
+            ]);
+        }
 
-        // 1. Instantiate your new Container!
-        $container = new \Dileep\Mvc\Core\Container();
+        // ✅ Initialize container once
+        $container = Container::getInstance();
 
-        // 2. OPTIONAL: You can bind specific implementations if you want, or just let it auto-wire everything!
-        // For example, if you wanted to bind an interface to a specific class, you could do it here:
-        $container->bind(\PDO::class, function() {
-            return \Dileep\Mvc\Core\Database::getInstance()->getConnection();
+        // Bind DB (example)
+        $container->bind(\PDO::class, function () {
+            return Database::getInstance()->getConnection();
         });
 
-        // define routes
-        if(isset($routes[$method][$url])) {
-            $action = $routes[$method][$url];
-            list($controllerName, $methodName) = explode('@', $action);
-            
-            $fullControllerClass = 'Dileep\Mvc\Controllers\\' . $controllerName;
+        foreach ($this->routes[$method] as $routePath => $action) {
 
-            if(!class_exists($fullControllerClass)) {
-                http_response_code(500);
-                // We just return the array now! No more echo or exit.
-                return [
-                    'status' => false,
-                    'message' => "Controller $controllerName not found"
-                ];
-            }
+            // Convert {param} → regex
+            $pattern = preg_replace('/\{([a-zA-Z]+)\}/', '(?P<$1>[^/]+)', $routePath);
+            $pattern = "#^" . $pattern . "$#";
 
-            // 2. THE MAGIC: Let the container build the controller and all its dependencies!
-            try {
-                $controller = $container->resolve($fullControllerClass);
-            } catch (Exception $e) {
-                // If the container fails to build a dependency, catch it here
-                http_response_code(500);
-                return [
-                    'status' => false,
-                    'message' => "Dependency Injection Error: " . $e->getMessage()
-                ];
-            }
+            if (preg_match($pattern, $url, $matches)) {
 
-            if($controller && method_exists($controller, $methodName)) {
-                // 3. Execute the method and return the data back to index.php
-                return $controller->$methodName();
-            } else {
-                http_response_code(404);
-                return [
-                    'status' => false,
-                    'message' => "Method $methodName not found in controller $controllerName"
-                ];
+                $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+
+                [$controllerName, $methodName] = explode('@', $action);
+                $fullControllerClass = 'Dileep\\Mvc\\Controllers\\' . $controllerName;
+
+                try {
+                    // ✅ Safety checks
+                    if (!class_exists($fullControllerClass)) {
+                        throw new Exception("Controller not found");
+                    }
+
+                    $controller = $container->resolve($fullControllerClass);
+
+                    if (!method_exists($controller, $methodName)) {
+                        throw new Exception("Method not found");
+                    }
+
+
+                    $params = array_values($params); // reindex for call_user_func_array
+                    $response = call_user_func_array([$controller, $methodName], $params);
+                    return json_encode($response);
+
+                } catch (Exception $e) {
+                    http_response_code(500);
+
+                    // ❌ Don't expose internal errors
+                    return json_encode([
+                        'status' => false,
+                        'message' => 'Internal Server Error'
+                    ]);
+                }
             }
-        } else {
-            http_response_code(404);
-            return [
-                'status' => false,
-                'message' => "Route not found"
-            ];
         }
+
+        // ❌ Route not found
+        http_response_code(404);
+        return json_encode([
+            'status' => false,
+            'message' => 'Route not found'
+        ]);
     }
 }

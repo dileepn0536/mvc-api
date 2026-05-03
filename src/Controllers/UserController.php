@@ -115,7 +115,7 @@ class UserController
         return ob_get_clean();
     }
 
-    public function updateUser()
+    public function updateUser($id)
     {
         $data = $this->getJsonData();
         
@@ -129,15 +129,6 @@ class UserController
 
         $name = $data['name'] ?? "";
         $email = $data['email'] ?? "";
-        $id = $data['id'] ?? null;
-
-        if(!$id) {
-            http_response_code(400);
-            return [
-                'status' => false,
-                'message' => "Invalid user"
-            ];
-        }
 
         if (empty($name) || empty($email)) {
             http_response_code(400);
@@ -181,7 +172,7 @@ class UserController
         }
     }
 
-    public function deleteUser()
+    public function deleteUser($id)
     {
         $data = $this->getJsonData();
         if ($data === null) {
@@ -191,14 +182,7 @@ class UserController
                 'message' => 'Invalid JSON input'
             ];
         }
-        $id = $data['id'] ?? null;
-        if(!$id) {
-            http_response_code(400);
-            return [
-                'status' => false,
-                'message' => "The id is invalid"
-            ];
-        }
+        
         $userinfo = $this->userService->getUserById($id);
 
         if (!$userinfo) {
@@ -223,6 +207,24 @@ class UserController
                 'message' => "Internal server error"
             ];
         }
+    }
+
+    public function showUser($id)
+    {
+        $userinfo = $this->userService->getUserById($id);
+
+        if (!$userinfo) {
+            http_response_code(404);
+            return [
+                'status' => false,
+                'message' => "User not found"
+            ];
+        }
+
+        return [
+            'status' => true,
+            'data' => $userinfo
+        ];
     }
 
     private function getJsonData()
