@@ -7,37 +7,43 @@ use Exception;
 
 class Database {
 
-    private $conn = null;
-    private static $instance = null;
+    private ?PDO $conn = null;
+    private static ?Database $instance = null;
 
     private function __construct()
     {
         try {
-            $url = getenv('MYSQL_URL');
+            $url = env('MYSQL_URL');
             
-            if($url) {
-                // Railway environment
+            if ($url) {
                 $parts = parse_url($url);
-                $host = $parts['host'] ?? getenv('MYSQLHOST');
-                $port = $parts['port'] ?? getenv('MYSQLPORT');
-                $dbname = $parts['path'] ? ltrim($parts['path'], '/') : getenv('MYSQLDATABASE');
-                $user = $parts['user'] ?? getenv('MYSQLUSER');
-                $password = $parts['pass'] ?? getenv('MYSQLPASSWORD');
+
+                $host = $parts['host'] ?? env('MYSQLHOST');
+                $port = $parts['port'] ?? env('MYSQLPORT', 3306);
+                $dbname = $parts['path'] ? ltrim($parts['path'], '/') : env('MYSQLDATABASE');
+                $user = $parts['user'] ?? env('MYSQLUSER');
+                $password = $parts['pass'] ?? env('MYSQLPASSWORD');
             } else {
-                // Local XAMPP fallback
-                $host = 'localhost';
-                $port = '3306';
-                $dbname = 'mvc_app'; // ← your local DB name
-                $user = 'root';
-                $password = ''; // ← XAMPP default
+                $host = env('DB_HOST', 'localhost');
+                $port = env('DB_PORT', 3306);
+                $dbname = env('DB_NAME', 'mvc_app');
+                $user = env('DB_USER', 'root');
+                $password = env('DB_PASS', '');
             }
 
-            if(!$host || !$dbname || !$user) {
+            if (!$host || !$dbname || !$user) {
                 throw new Exception("Database configuration is incomplete");
             }
 
+            $dsn = sprintf(
+                "mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4",
+                $host,
+                $port,
+                $dbname
+            );
+
             $this->conn = new PDO(
-                "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4",
+                $dsn,
                 $user,
                 $password,
                 [
@@ -45,14 +51,15 @@ class Database {
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
                 ]
             );
-        } catch(PDOException $e) {
-            throw new Exception($e->getMessage());
+
+        } catch (PDOException $e) {
+            throw new Exception("Database connection failed");
         }
     }
 
-    public static function getInstance()
+    public static function getInstance(): Database
     {
-        if(self::$instance === null) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;
@@ -63,11 +70,6 @@ class Database {
         return $this->conn;
     }
 
-    private function __clone()
-    {
-        
-    }
-
+    private function __clone() {}
     public function __wakeup() {}
 }
-?>

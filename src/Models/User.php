@@ -4,9 +4,9 @@ namespace Dileep\Mvc\Models;
 
 class User
 {
-    public $id;
-    public $name;
-    public $email;
+    public ?int $id;
+    public string $name;
+    public string $email;
 
     public function __construct(string $name, string $email, ?int $id=null)
     {

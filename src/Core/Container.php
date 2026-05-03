@@ -7,16 +7,16 @@ use Exception;
 
 class Container
 {
-    private $bindings = [];
-    protected static $instance = null;
+    protected array $bindings = [];
+    protected static ?Container $instance = null;
 
     // Your exact bind method!
-    public function bind($abstract, $concrete)
+    public function bind(string $abstract, callable $concrete)
     {
         $this->bindings[$abstract] = $concrete;
     }
 
-    public static function getInstance()
+    public static function getInstance(): Container
     {
         if (!self::$instance) {
             self::$instance = new self();
@@ -24,7 +24,7 @@ class Container
         return self::$instance;
     }
 
-    public function resolve($abstract)
+    public function resolve(string $abstract)
     {
         // 1. MANUAL BINDING CHECK (Your logic)
         // Does a specific recipe exist for this class?

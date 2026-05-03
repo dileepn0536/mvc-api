@@ -7,8 +7,8 @@ use Dileep\Mvc\Services\NotificationFactory;
 
 class UserService
 {
-    private $userRepository;
-    private $cache;
+    private ?UserRepository $userRepository;
+    private Cache $cache;
 
     public function __construct(
         UserRepository $userRepository,
@@ -18,7 +18,7 @@ class UserService
         $this->cache = $cache;
     }
 
-    public function getUsers($limit = 20, $offset = 0)
+    public function getUsers(int $limit = 20, int $offset = 0)
     {
         $cacheKey = "users_{$limit}_{$offset}";
 
@@ -35,7 +35,7 @@ class UserService
         return $users;
     }
 
-    public function createUser($name, $email)
+    public function createUser(string $name, string $email)
     {
         $result = $this->userRepository->createUser($name, $email);
         if($result) {
@@ -50,7 +50,7 @@ class UserService
         return $result;
     }
 
-    public function getUserById($id)
+    public function getUserById(?int $id)
     {
         $cacheKey = "user_{$id}";
 
@@ -66,14 +66,14 @@ class UserService
         return $user;
     }
 
-    public function updateUser($id, $name, $email)
+    public function updateUser(?int $id, string $name, string $email)
     {
         $result = $this->userRepository->updateUser($id, $name, $email);
         $this->cache->flush(); // invalidate cache ✅
         return $result;
     }
 
-    public function deleteUser($id)
+    public function deleteUser(?int $id)
     {
         $result = $this->userRepository->deleteUser($id);
         $this->cache->flush(); // invalidate cache ✅

@@ -8,7 +8,7 @@ use Exception;
 
 class UserController
 {
-    private $userService;
+    private UserService $userService;
     private $cache;
 
     public function __construct(UserService $userService , Cache $cache)
@@ -115,7 +115,7 @@ class UserController
         return ob_get_clean();
     }
 
-    public function updateUser($id)
+    public function updateUser(int $id)
     {
         $data = $this->getJsonData();
         
@@ -172,7 +172,7 @@ class UserController
         }
     }
 
-    public function deleteUser($id)
+    public function deleteUser(int $id)
     {
         $data = $this->getJsonData();
         if ($data === null) {
@@ -182,7 +182,7 @@ class UserController
                 'message' => 'Invalid JSON input'
             ];
         }
-        
+
         $userinfo = $this->userService->getUserById($id);
 
         if (!$userinfo) {
@@ -209,7 +209,7 @@ class UserController
         }
     }
 
-    public function showUser($id)
+    public function showUser(int $id)
     {
         $userinfo = $this->userService->getUserById($id);
 

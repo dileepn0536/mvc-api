@@ -1,7 +1,15 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$env = getenv('APP_ENV') ?: 'prod';
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->load();
+
+require_once __DIR__ . '/../src/Core/helpers.php';
+
+$env = env('APP_ENV') ?: 'prod';
+
 
 if ($env === 'dev') {
     error_reporting(E_ALL);
