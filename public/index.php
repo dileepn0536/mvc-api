@@ -3,14 +3,16 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-if(file_exists(__DIR__ . '/../.env')) {
+if (file_exists(__DIR__ . '/../.env')) {
     $dotenv = Dotenv::createImmutable(dirname(__DIR__));
     $dotenv->load();
 }
 
+date_default_timezone_set($_ENV['APP_TIMEZONE'] ?? 'Asia/Kolkata');
+
 require_once __DIR__ . '/../src/Core/helpers.php';
 
-$env = env('APP_ENV') ?: 'prod';
+$env = $_ENV['APP_ENV'] ?? 'prod';
 
 
 if ($env === 'dev') {
@@ -21,19 +23,16 @@ if ($env === 'dev') {
     ini_set('display_errors', 0);
 }
 
+header('Content-Type: application/json; charset=utf-8');
+
 try {
     $router = new Dileep\Mvc\Core\Router();
     $response = $router->handleRequest();
 
-    if(is_array($response)) {
-        header('Content-Type: application/json');
-        echo json_encode($response);
-    } else {
-        echo $response;
-    }
-} catch(Exception $e) {
+    echo is_array($response) ? json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) : $response;
+    exit;
+} catch(Throwable $e) {
     http_response_code(500);
-    header('Content-Type: application/json');
     
     $errorData = [
         'status' => false,
@@ -46,7 +45,8 @@ try {
         $errorData['line'] = $e->getLine();
     } else {
         // In production, you might want to log the error details instead of exposing them to the client.
-        error_log($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+        error_log($e);
     }
-    echo json_encode($errorData);
+    echo json_encode($errorData, JSON_THROW_ON_ERROR);
+    exit;
 }

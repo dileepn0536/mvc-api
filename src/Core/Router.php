@@ -3,8 +3,6 @@
 namespace Dileep\Mvc\Core;
 
 use Exception;
-use Dileep\Mvc\Core\Container;
-use Dileep\Mvc\Core\Database;
 
 class Router
 {
@@ -18,7 +16,6 @@ class Router
 
     public function handleRequest()
     {
-        header('Content-Type: application/json');
 
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -35,7 +32,7 @@ class Router
         $url = trim($url, '/');
         $url = strtolower($url);
 
-        $method = $_SERVER['REQUEST_METHOD'];
+        $method = strtoupper($_SERVER['REQUEST_METHOD']);
 
         // 🚫 Method check
         if (!isset($this->routes[$method])) {
@@ -62,7 +59,16 @@ class Router
 
             if (preg_match($pattern, $url, $matches)) {
 
+                // ✅ Extract named parameters
+                // $matches contains both numeric and named keys, we only want named ones
+                // Using array_filter with ARRAY_FILTER_USE_KEY to keep only named keys
+                // This way we avoid issues with numeric keys and ensure we only get the parameters defined in the route
+                // what we want is something like ['id' => '123'] if the route is users/show/{id} and the URL is users/show/123
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+
+                if(!str_contains($action, '@')) {
+                    throw new Exception("Invalid route action format");
+                }
 
                 [$controllerName, $methodName] = explode('@', $action);
                 $fullControllerClass = 'Dileep\\Mvc\\Controllers\\' . $controllerName;
@@ -82,25 +88,25 @@ class Router
 
                     $params = array_values($params); // reindex for call_user_func_array
                     $response = call_user_func_array([$controller, $methodName], $params);
-                    return json_encode($response);
+                    return $response;
 
-                } catch (Exception $e) {
+                } catch (\Throwable $e) {
                     http_response_code(500);
 
                     // ❌ Don't expose internal errors
-                    return json_encode([
+                    return [
                         'status' => false,
-                        'message' => 'Internal Server Error'
-                    ]);
+                        'message' => 'An unexpected error occurred.'
+                    ];
                 }
             }
         }
 
         // ❌ Route not found
         http_response_code(404);
-        return json_encode([
+        return [
             'status' => false,
             'message' => 'Route not found'
-        ]);
+        ];
     }
 }
