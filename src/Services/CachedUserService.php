@@ -2,13 +2,14 @@
 
 namespace Dileep\Mvc\Services;
 
-use Dileep\Mvc\Interfaces\UserCrudInterface;
 use Dileep\Mvc\Core\Cache;
+use Dileep\Mvc\Interfaces\UserServiceInterface;
+use Override;
 
-class CachedUserService implements UserCrudInterface
+class CachedUserService implements UserServiceInterface
 {
     public function __construct(
-        private UserCrudInterface $userService,
+        private UserServiceInterface $userService,
         private Cache $cache
     ) {
 
@@ -79,5 +80,17 @@ class CachedUserService implements UserCrudInterface
         }
 
         return $result;
+    }
+
+    #[Override]
+    public function beginSecureUpdate(?int $id): mixed
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
+    public function completeUpdate(): bool
+    {
+        throw new \Exception('Not implemented');
     }
 }

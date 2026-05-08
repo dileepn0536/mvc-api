@@ -2,13 +2,14 @@
 
 namespace Dileep\Mvc\Services;
 
-use Dileep\Mvc\Interfaces\UserCrudInterface;
+use Dileep\Mvc\Interfaces\UserServiceInterface;
 use Dileep\Mvc\Services\NotificationFactory;
+use Override;
 
-class NotificationUserService implements UserCrudInterface
+class NotificationUserService implements UserServiceInterface
 {
     public function __construct(
-        private UserCrudInterface $service
+        private UserServiceInterface $service
     ) {}
 
     public function createUser(string $name, string $email): bool
@@ -45,5 +46,17 @@ class NotificationUserService implements UserCrudInterface
     public function deleteUser(?int $id): bool
     {
         return $this->service->deleteUser($id);
+    }
+
+    #[Override]
+    public function beginSecureUpdate(?int $id): mixed
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
+    public function completeUpdate(): bool
+    {
+        throw new \Exception('Not implemented');
     }
 }

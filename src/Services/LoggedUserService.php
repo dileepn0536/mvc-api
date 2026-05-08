@@ -2,12 +2,12 @@
 
 namespace Dileep\Mvc\Services;
 
-use Dileep\Mvc\Interfaces\UserCrudInterface;
+use Dileep\Mvc\Interfaces\UserServiceInterface;
 
-class LoggedUserService implements UserCrudInterface
+class LoggedUserService implements UserServiceInterface
 {
     public function __construct(
-        private UserCrudInterface $service,
+        private UserServiceInterface $service,
         private \Psr\Log\LoggerInterface $logger
     ) {}
 
@@ -89,5 +89,17 @@ class LoggedUserService implements UserCrudInterface
         }
 
         return $result;
+    }
+
+    public function beginSecureUpdate(?int $id): mixed
+    {
+        $this->logger->info("Beginning secure update for user", ['id' => $id]);
+        return $this->service->beginSecureUpdate($id);
+    }
+
+    public function completeUpdate(): bool
+    {
+        $this->logger->info("Completing secure update");
+        return $this->service->completeUpdate();
     }
 }
