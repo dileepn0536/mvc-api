@@ -7,10 +7,10 @@ class EmailNotification implements NotificationInterface
 {
     public function send(string $to, string $message): bool
     {
-        fwrite(\STDERR, "=== EMAIL SEND CALLED: $to ===" . PHP_EOL);
+        error_log("=== EMAIL SEND CALLED: $to ===");
 
-        fwrite(\STDERR, "=== SEND METHOD CALLED ===" . PHP_EOL);
-        fwrite(\STDERR, "Email sent to: $to | Message: $message" . PHP_EOL);
+        error_log("=== SEND METHOD CALLED ===");
+        error_log("Email sent to: $to | Message: $message");
         return true;
     }
 }
