@@ -16,7 +16,7 @@ abstract class BaseController
         return $data;
     }
 
-    protected function jsonResponse(bool $status, string | array $dataOrMessage, int $code = 200)    {
+    protected function jsonResponse(bool $status, mixed $dataOrMessage, int $code = 200)    {
         header('Content-Type: application/json');
         http_response_code($code);
 
