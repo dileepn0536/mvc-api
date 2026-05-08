@@ -96,7 +96,8 @@ class Router
                     // ❌ Don't expose internal errors
                     return [
                         'status' => false,
-                        'message' => 'An unexpected error occurred.'
+                        'message' => 'An unexpected error occurred.',
+                        'error' => $e->getMessage() // Uncomment for debugging (not recommended in production)
                     ];
                 }
             }

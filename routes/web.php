@@ -12,6 +12,7 @@ return [
         // Dynamic routes later
         'users' => 'UserController@index',
         'users/show/{id}' => 'UserController@showUser',
+        'users/test-lock/{id}' => 'UserController@testLock',
     ],
 
     'POST' => [
