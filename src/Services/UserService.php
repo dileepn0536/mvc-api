@@ -79,4 +79,14 @@ class UserService
         $this->cache->flush(); // invalidate cache ✅
         return $result;
     }
+
+    public function beginSecureUpdate(?int $id)
+    {
+        return $this->userRepository->beginSecureUpdate($id);
+    }
+
+    public function completeUpdate()
+    {
+        return $this->userRepository->commitSecureUpdate();
+    }
 }

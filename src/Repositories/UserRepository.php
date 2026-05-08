@@ -63,4 +63,41 @@ class UserRepository
         $stmt = $this->db->prepare("DELETE FROM users where id=?");
         return $stmt->execute([$id]);
     }
+
+    public function beginSecureUpdate(?int $id)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // Lock the user row for update
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ? FOR UPDATE");
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+
+            if (!$row) {
+                $this->db->rollBack();
+                return null; // User not found
+            }
+
+            return $this->mapToUser($row);
+        } catch (\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e; // Re-throw exception after rollback
+        }
+    }
+
+    public function commitSecureUpdate()
+    {
+        try {
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e; // Re-throw exception after rollback
+        }
+    }
 }
