@@ -13,7 +13,7 @@ class NotificationUserService implements UserServiceInterface
 
     public function createUser(string $name, string $email): bool
     {
-        fwrite(STDERR, "=== NOTIFICATION CREATE USER CALLED ===" . PHP_EOL);
+        fwrite(\STDERR, "=== NOTIFICATION CREATE USER CALLED ===" . PHP_EOL);
 
         $result = $this->service->createUser($name, $email);
         if ($result) {
