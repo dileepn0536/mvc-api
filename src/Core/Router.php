@@ -21,7 +21,7 @@ class Router
 
     public function handleRequest()
     {
-
+        fwrite(STDERR, "=== REQUEST: " . $_SERVER['REQUEST_METHOD'] . " " . $_SERVER['REQUEST_URI'] . " ===" . PHP_EOL);
         $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
         // Normalize base path
