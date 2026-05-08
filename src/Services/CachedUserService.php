@@ -5,7 +5,7 @@ namespace Dileep\Mvc\Services;
 use Dileep\Mvc\Interfaces\UserServiceInterface;
 use Dileep\Mvc\Core\Cache;
 
-class CachedUserService
+class CachedUserService implements UserServiceInterface
 {
     public function __construct(
         private UserServiceInterface $userService,
@@ -79,5 +79,15 @@ class CachedUserService
         }
 
         return $result;
+    }
+
+    public function beginSecureUpdate(?int $id): mixed
+    {
+        return $this->userService->beginSecureUpdate($id);
+    }
+
+    public function completeUpdate(): bool
+    {
+        return $this->userService->completeUpdate();
     }
 }

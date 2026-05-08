@@ -2,6 +2,11 @@
 
 namespace Dileep\Mvc\Core;
 
+use Dileep\Mvc\Interfaces\UserServiceInterface;
+use Dileep\Mvc\Repositories\UserRepository;
+use Dileep\Mvc\Services\CachedUserService;
+use Dileep\Mvc\Services\NotificationUserService;
+use Dileep\Mvc\Services\UserService;
 use Exception;
 
 class Router
@@ -49,6 +54,17 @@ class Router
         // Bind DB (example)
         $container->bind(\PDO::class, function () {
             return Database::getInstance()->getConnection();
+        });
+
+        $container->bind(UserServiceInterface::class, function($c) {
+            // 1. The Core (Talks to Repo)
+            $core = new UserService($c->resolve(UserRepository::class));
+
+            // 2. The Link (Cache wraps Core)
+            $cached = new CachedUserService($core, $c->resolve(Cache::class));
+
+            // 3. The final result (Notification wraps Cache)
+            return new NotificationUserService($cached);
         });
 
         foreach ($this->routes[$method] as $routePath => $action) {

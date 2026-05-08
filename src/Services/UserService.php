@@ -1,9 +1,10 @@
 <?php
 namespace Dileep\Mvc\Services;
 
+use Dileep\Mvc\Interfaces\UserServiceInterface;
 use Dileep\Mvc\Repositories\UserRepository;
 
-class UserService
+class UserService implements UserServiceInterface
 {
     private ?UserRepository $userRepository;
 
