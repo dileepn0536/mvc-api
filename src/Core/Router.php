@@ -8,6 +8,9 @@ use Dileep\Mvc\Services\CachedUserService;
 use Dileep\Mvc\Services\NotificationUserService;
 use Dileep\Mvc\Services\UserService;
 use Exception;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Dileep\Mvc\Services\LoggedUserService;
 
 class Router
 {
@@ -56,6 +59,7 @@ class Router
             return Database::getInstance()->getConnection();
         });
 
+        // Bind Cache
         $container->bind(UserServiceInterface::class, function($c) {
             // 1. The Core (Talks to Repo)
             $core = new UserService($c->resolve(UserRepository::class));
@@ -64,7 +68,10 @@ class Router
             $cached = new CachedUserService($core, $c->resolve(Cache::class));
 
             // 3. The final result (Notification wraps Cache)
-            return new NotificationUserService($cached);
+            $notification = new NotificationUserService($cached);
+            $logger = new Logger('app');
+            $logger->pushHandler(new StreamHandler('php://stderr', Logger::DEBUG));
+            return new LoggedUserService($notification, $logger);
         });
 
         foreach ($this->routes[$method] as $routePath => $action) {

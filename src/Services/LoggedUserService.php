@@ -4,11 +4,11 @@ namespace Dileep\Mvc\Services;
 
 use Dileep\Mvc\Interfaces\UserServiceInterface;
 
-class LoggedUserService
+class LoggedUserService implements UserServiceInterface
 {
     public function __construct(
         private UserServiceInterface $service,
-        private object $logger
+        private \Psr\Log\LoggerInterface $logger
     ) {}
 
     public function getUsers(int $limit = 20, int $offset = 0): array
