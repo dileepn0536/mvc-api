@@ -2,16 +2,16 @@
 
 namespace Dileep\Mvc\Controllers;
 
-use Dileep\Mvc\Services\UserService;
 use Exception;
 use Dileep\Mvc\Validators\UserValidator;
 use Dileep\Mvc\Controllers\BaseController;
+use Dileep\Mvc\Interfaces\UserServiceInterface;
 class UserController extends BaseController
 {
-    private UserService $userService;
+    private UserServiceInterface $userService;
     private UserValidator $userValidator;
 
-    public function __construct(UserService $userService, UserValidator $userValidator)
+    public function __construct(UserServiceInterface $userService, UserValidator $userValidator)
     {
         $this->userService = $userService;
         $this->userValidator = $userValidator;
