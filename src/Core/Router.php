@@ -114,14 +114,10 @@ class Router
                     return $response;
 
                 } catch (\Throwable $e) {
-                    http_response_code(500);
-
-                    // ❌ Don't expose internal errors
-                    return [
-                        'status' => false,
-                        'message' => 'An unexpected error occurred.',
-                        'error' => $e->getMessage() // Uncomment for debugging (not recommended in production)
-                    ];
+                    $handler = new ExceptionHandler();
+                    $response = $handler->handle($e);
+                    http_response_code($response['code']);
+                    return $response;
                 }
             }
         }
