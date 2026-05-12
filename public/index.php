@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Dileep\Mvc\Core\ExceptionHandler;
 use Dotenv\Dotenv;
 
 if (file_exists(__DIR__ . '/../.env')) {
@@ -25,28 +26,32 @@ if ($env === 'dev') {
 
 header('Content-Type: application/json; charset=utf-8');
 
+$flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR;
+
+if($env == "dev") {
+    $flags |= JSON_PRETTY_PRINT;
+}
 try {
     $router = new Dileep\Mvc\Core\Router();
     $response = $router->handleRequest();
 
-    echo is_array($response) ? json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) : $response;
+    echo is_array($response) ? json_encode($response, $flags) : $response;
     exit;
 } catch(Throwable $e) {
-    http_response_code(500);
-    
-    $errorData = [
-        'status' => false,
-        'error' => 'An unexpected server error occurred.',
-    ];
+
+    $response = ExceptionHandler::handle($e);
+    http_response_code($response['code']);
 
     if ($env === 'dev') {
-        $errorData['details'] = $e->getMessage();
-        $errorData['file'] = $e->getFile();
-        $errorData['line'] = $e->getLine();
+        $response['details'] = $e->getMessage();
+        $response['file'] = $e->getFile();
+        $response['line'] = $e->getLine();
     } else {
         // In production, you might want to log the error details instead of exposing them to the client.
-        error_log($e);
+        error_log($e->getMessage() . 
+                  " in " . $e->getFile() . 
+                  " on line " . $e->getLine());
     }
-    echo json_encode($errorData, JSON_THROW_ON_ERROR);
+    echo json_encode($response, JSON_THROW_ON_ERROR);
     exit;
 }

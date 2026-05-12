@@ -5,13 +5,14 @@ namespace Dileep\Mvc\Core;
 
 use ReflectionClass;
 use Exception;
+use InvalidArgumentException;
 
 class Container
 {
-    protected array $bindings = [];
-    protected static ?Container $instance = null;
-    protected array $instances = [];
-    protected array $resolving = [];
+    private array $bindings = [];
+    private static ?Container $instance = null;
+    private array $instances = [];
+    private array $resolving = [];
 
     private function __construct()
     {
@@ -21,7 +22,15 @@ class Container
     // Your exact bind method!
     public function bind(string $abstract, callable $concrete)
     {
+        if (empty($abstract)) {
+            throw new InvalidArgumentException("Abstract cannot be empty");
+        }
         $this->bindings[$abstract] = $concrete;
+    }
+
+    public function clearInstanes():void
+    {
+        $this->instances = [];
     }
 
     public static function getInstance(): Container

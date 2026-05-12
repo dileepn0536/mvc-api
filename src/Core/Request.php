@@ -18,16 +18,22 @@ class Request
 
     private function parseUrl(): string
     {
-        $url        = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $scriptName = $_SERVER['PHP_SELF'];
-        $base       = dirname($scriptName);
+        // http://localhost/oops/mvc/public/users
+        $url        = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // oops/mvc/public/users
+        $scriptName = $_SERVER['PHP_SELF']; // oops/mvc/public/index.php
+        $base       = dirname($scriptName); //oops/mvc/public
 
+        // base should not be / and also url is part of the base
         if ($base !== '/' && strpos($url, $base) === 0) {
+            // remove the portion of the url and return the substring
             $url = substr($url, strlen($base));
         }
 
+        // /users//show remove //
         $url = preg_replace('#/+#', '/', $url);
+        // trim both sides if / is there
         $url = trim($url, '/');
+        // convert to small case
         return strtolower($url);
     }
 
@@ -57,6 +63,13 @@ class Request
         return $this->params[$key] ?? $_GET[$key] ?? $default;
     }
 
+    /**
+     * sets url parameters to the router
+     * ex: /users/{id} -> [id => 5]
+     *
+     * @param array $params
+     * @return void
+     */
     public function setParams(array $params): void
     {
         $this->params = $params;
