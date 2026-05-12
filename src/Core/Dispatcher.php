@@ -7,8 +7,7 @@ use Exception;
 class Dispatcher
 {
     public function __construct(
-        private Container $container,
-        private ExceptionHandler $exceptionHandler
+        private Container $container
     ) {}
 
     public function dispatch(string $action, array $params): mixed
@@ -35,7 +34,8 @@ class Dispatcher
             return call_user_func_array([$controller, $methodName], $params);
 
         } catch (\Throwable $e) {
-            $response = $this->exceptionHandler->handle($e);
+
+            $response = ExceptionHandler::handle($e);
             http_response_code($response['code']);
             return $response;
         }

@@ -8,19 +8,19 @@ use Dileep\Mvc\Exceptions\UnauthorizedException;
 
 class ExceptionHandler
 {
-    public function handle(\Throwable $e): array
+    public static function handle(\Throwable $e): array
     {
         error_log($e->getMessage());
 
         return match(true) {
-            $e instanceof NotFoundException     => $this->notFound($e),
-            $e instanceof ValidationException   => $this->validation($e),
-            $e instanceof UnauthorizedException => $this->unauthorized($e),
-            default                             => $this->serverError($e)
+            $e instanceof NotFoundException     => self::notFound($e),
+            $e instanceof ValidationException   => self::validation($e),
+            $e instanceof UnauthorizedException => self::unauthorized($e),
+            default                             => self::serverError($e)
         };
     }
 
-    private function notFound(\Throwable $e): array
+    private static function notFound(\Throwable $e): array
     {
         return [
             'status'  => false,
@@ -29,7 +29,7 @@ class ExceptionHandler
         ];
     }
 
-    private function validation(\Throwable $e): array
+    private static function validation(\Throwable $e): array
     {
         return [
             'status'  => false,
@@ -38,7 +38,7 @@ class ExceptionHandler
         ];
     }
 
-    private function unauthorized(\Throwable $e): array
+    private static function unauthorized(\Throwable $e): array
     {
         return [
             'status'  => false,
@@ -47,11 +47,14 @@ class ExceptionHandler
         ];
     }
 
-    private function serverError(\Throwable $e): array
+    private static function serverError(\Throwable $e): array
     {
+        error_log($e->getMessage());
+
+        $message = (getenv("APP_ENV") == 'dev') ? $e->getMessage() : "Internal server error";
         return [
             'status'  => false,
-            'message' => 'Internal server error',
+            'message' => $message,
             'code'    => 500
         ];
     }

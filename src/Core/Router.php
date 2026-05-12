@@ -38,7 +38,6 @@ class Router
         // Setup dispatcher
         $dispatcher = new Dispatcher(
             $container,
-            new ExceptionHandler()
         );
 
         // Match route
